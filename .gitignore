@@ -1,0 +1,7 @@
+# Ignore the Visual Studio Code settings folder
+.vscode/
+# This folder typically contains workspace settings, extensions, and configuration files specific to your development environment.
+
+# Ignore the distribution folder
+dist/
+# The dist folder usually contains compiled output files for your project, including binaries and build artifacts from C++ compilation.

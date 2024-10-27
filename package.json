@@ -1,0 +1,9 @@
+{
+  "type": "commonjs",
+  "scripts": {
+    "start": "node seeder.js"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.7"
+  }
+}

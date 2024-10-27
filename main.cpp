@@ -128,7 +128,7 @@ public:
 int main()
 {
     sqlite3 *db;
-    const char *dbPath = "D:/CPP/library-system/db/example.db";
+    const char *dbPath = "D:/CPP/library-system/db/library-system.db";
     int exit = sqlite3_open(dbPath, &db);
     if (exit)
     {

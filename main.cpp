@@ -47,6 +47,19 @@ public:
             delete temp;
         }
     }
+
+    bool insertData(T data)
+    {
+        if (this->head != nullptr)
+        {
+            Node<T> *curr = new Node<T>(data);
+            curr->next = this->head;
+            this->head = curr;
+            return true;
+        }
+        this->head = new Node<T>(data);
+        return true;
+    }
 };
 
 enum UserType
@@ -71,21 +84,22 @@ string userTypeToString(UserType type)
 class User
 {
 protected:
-    static int userID;
+    static int nextUserID;
+    int userID;
     string name;
     UserType type;
 
 public:
     User(string name, UserType type)
     {
-        ++userID;
+        this->userID = ++nextUserID;
         this->name = name;
         this->type = type;
     }
     virtual void displayUserDetails() {}
 };
 
-int User::userID = 0;
+int User::nextUserID = 0;
 
 class Student : private User
 {
@@ -98,7 +112,7 @@ public:
     {
         this->yearOfStudies = yearOfStudies;
     }
-    void displayUserDetails() override
+    void displayUserDetails(void) override
     {
         cout << "Student ID: " << User::userID << endl;
         cout << "Student Name: " << this->name << endl;
@@ -118,11 +132,57 @@ public:
         this->department = department;
     }
 
-    void displayUserDetails() override
+    void displayUserDetails(void) override
     {
         cout << "Teacher ID: " << User::userID << endl;
         cout << "Teacher Department: " << this->name << endl;
+        cout << "Teacher Name: " << this->name << endl;
     }
+};
+
+class Book
+{
+private:
+    static int nextBookID;
+    int bookID;
+    string title;
+    string author;
+    bool isAvaible;
+
+public:
+    Book(string title, string author, bool isAvaible)
+    {
+        this->bookID = ++nextBookID;
+        this->author = author;
+        this->isAvaible = isAvaible;
+        this->title = title;
+    }
+
+    void displayBookDetails(void) const
+    {
+        cout << "Book ID: " << this->bookID << endl;
+        cout << "Book Title: " << this->title << endl;
+        cout << "Book author: " << this->author << endl;
+        cout << "IsAvaible? " << (this->isAvaible ? "Yes" : "No") << endl;
+    }
+};
+
+int Book::nextBookID = 0;
+
+class Library
+{
+private:
+    Linklist<Book> books;
+    Linklist<User *> users;
+    Linklist<int> transactionHistory;
+
+public:
+    void addBook(Book &book) {};
+    void addUser(User &user) {}
+    Book *searchBook(int id) const { return nullptr; };
+    User *searchUser(int id) const { return nullptr; };
+    void borrowBook(int bookID, int userID) {};
+    void returnBook(int bookID, int userID) {};
 };
 
 int main()

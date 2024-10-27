@@ -1,5 +1,8 @@
 {
-  "type": "commonjs",
+  "name": "library-system",
+  "version": "1.0.0",
+  "author": "SAM",
+  "description": "A tool for bulk data insertion and deletion in an SQLite3 database.",
   "scripts": {
     "start": "node seeder.js"
   },

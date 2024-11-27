@@ -60,6 +60,62 @@ public:
         this->head = new Node<T>(data);
         return true;
     }
+
+    T searchData(int id)
+    {
+        Node<T> *curr = this->head;
+        while (curr != nullptr)
+        {
+            if (curr->data->id == id)
+                return *curr->data;
+            curr = curr->next;
+        }
+
+        return nullptr;
+    }
+
+    bool borrowBook(int id)
+    {
+        Node<T> *curr = this->head;
+        while (curr != nullptr)
+        {
+            if (curr->data = > id == id)
+            {
+                curr->data->isAvaible = false;
+                return true;
+            };
+            curr = curr->next;
+        }
+        return false;
+    }
+
+    bool addBookInLinklist(int id)
+    {
+        Node<T> *curr = this->head;
+        while (curr != nullptr)
+        {
+            if (curr->data->id == id)
+            {
+                if (data->borrowBookedID->head == nullptr)
+                {
+                    data->borrowBookedID->head = new Node<int>(id);
+                }
+
+                Node<int> *list = curr->data->borrowBookedID->head;
+
+                while (list->next != nullptr)
+                {
+                    list = list->next;
+                }
+                Node<int> *temp = new Node<int>(id);
+                list->next = temp;
+                return true;
+            }
+            curr = curr->next;
+        }
+
+        return false;
+    }
 };
 
 enum UserType
@@ -85,14 +141,14 @@ class User
 {
 protected:
     static int nextUserID;
-    int userID;
+    int id;
     string name;
     UserType type;
 
 public:
     User(string name, UserType type)
     {
-        this->userID = ++nextUserID;
+        this->id = ++nextUserID;
         this->name = name;
         this->type = type;
     }
@@ -114,7 +170,7 @@ public:
     }
     void displayUserDetails(void) override
     {
-        cout << "Student ID: " << User::userID << endl;
+        cout << "Student ID: " << this->id << endl;
         cout << "Student Name: " << this->name << endl;
         cout << "Student Year of Studies: " << this->yearOfStudies << endl;
     }
@@ -134,7 +190,7 @@ public:
 
     void displayUserDetails(void) override
     {
-        cout << "Teacher ID: " << User::userID << endl;
+        cout << "Teacher ID: " << this->id << endl;
         cout << "Teacher Department: " << this->name << endl;
         cout << "Teacher Name: " << this->name << endl;
     }
@@ -144,7 +200,7 @@ class Book
 {
 private:
     static int nextBookID;
-    int bookID;
+    int id;
     string title;
     string author;
     bool isAvaible;
@@ -152,7 +208,7 @@ private:
 public:
     Book(string title, string author, bool isAvaible)
     {
-        this->bookID = ++nextBookID;
+        this->id = ++nextBookID;
         this->author = author;
         this->isAvaible = isAvaible;
         this->title = title;
@@ -160,7 +216,7 @@ public:
 
     void displayBookDetails(void) const
     {
-        cout << "Book ID: " << this->bookID << endl;
+        cout << "Book ID: " << this->id << endl;
         cout << "Book Title: " << this->title << endl;
         cout << "Book author: " << this->author << endl;
         cout << "IsAvaible? " << (this->isAvaible ? "Yes" : "No") << endl;
@@ -173,16 +229,46 @@ class Library
 {
 private:
     Linklist<Book> books;
-    Linklist<User *> users;
+    Linklist<User> users;
     Linklist<int> transactionHistory;
 
 public:
-    void addBook(Book &book) {};
-    void addUser(User &user) {}
-    Book *searchBook(int id) const { return nullptr; };
-    User *searchUser(int id) const { return nullptr; };
-    void borrowBook(int bookID, int userID) {};
-    void returnBook(int bookID, int userID) {};
+    void addBook(Book &book)
+    {
+        books.insertData(book);
+    };
+    void addUser(User &user)
+    {
+        users.insertData(user);
+    }
+    Book searchBook(int id)
+    {
+        return books.searchData(id);
+    };
+    User searchUser(int id)
+    {
+        return users.searchData(id);
+    };
+    bool borrowBook(int bookID, int userID)
+    {
+        bool res = books.borrowBook(bookID);
+        if (!res)
+        {
+            cerr << "Book already borrowed " << endl;
+            return false;
+        }
+        bool res2 = users.addBookInLinklist(userID);
+        if (!res2)
+        {
+            cerr << "User not found" << endl;
+            return false;
+        }
+
+        return true;
+    };
+    void returnBook(int bookID, int userID) {
+
+    };
 };
 
 int main()

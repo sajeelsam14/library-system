@@ -1,5 +1,6 @@
 #include <iostream>
-#include "sqlite3.h"
+#include <string>
+#include <optional>
 
 using namespace std;
 
@@ -23,6 +24,20 @@ public:
         this->data = data;
         this->next = nullptr;
     }
+
+    T &getData()
+    {
+        return data;
+    }
+    Node *getNext() const
+    {
+        return next;
+    }
+    void setNext(Node *nextNode)
+    {
+        next = nextNode;
+    }
+
     friend class Linklist<T>;
 };
 
@@ -43,82 +58,81 @@ public:
         while (curr != nullptr)
         {
             Node<T> *temp = curr;
-            curr = curr->next;
+            curr = curr->getNext();
             delete temp;
         }
     }
 
-    bool insertData(T data)
+    Node<T> *getHead() const
     {
-        if (this->head != nullptr)
-        {
-            Node<T> *curr = new Node<T>(data);
-            curr->next = this->head;
-            this->head = curr;
-            return true;
-        }
-        this->head = new Node<T>(data);
+        return head;
+    }
+
+    bool insertData(const T &data)
+    {
+        Node<T> *newNode = new Node<T>(data);
+        newNode->setNext(head);
+        head = newNode;
         return true;
     }
 
-    T searchData(int id)
+    std::optional<T> searchData(int id)
     {
-        Node<T> *curr = this->head;
+        Node<T> *curr = head;
         while (curr != nullptr)
         {
-            if (curr->data->id == id)
-                return *curr->data;
-            curr = curr->next;
+            if (curr->getData().getId() == id)
+            {
+                return curr->getData();
+            }
+            curr = curr->getNext();
         }
-
-        return nullptr;
+        return std::nullopt;
     }
 
     bool borrowBook(int id)
     {
-        Node<T> *curr = this->head;
+        Node<T> *curr = head;
         while (curr != nullptr)
         {
-            if (curr->data = > id == id)
+            if (curr->getData().getId() == id)
             {
-                curr->data->isAvaible = false;
+                curr->getData().setAvailability(false);
                 return true;
-            };
-            curr = curr->next;
+            }
+            curr = curr->getNext();
         }
         return false;
     }
 
     bool addBookInLinklist(int id)
     {
-        Node<T> *curr = this->head;
+        Node<T> *curr = head;
         while (curr != nullptr)
         {
-            if (curr->data->id == id)
+            if (curr->getData()->getId() == id)
             {
-                if (data->borrowBookedID->head == nullptr)
+                if (curr->getData()->getBorrowedBooks().head == nullptr)
                 {
-                    data->borrowBookedID->head = new Node<int>(id);
+                    curr->getData()->getBorrowedBooks().head = new Node<int>(id);
+                    return true;
                 }
-
-                Node<int> *list = curr->data->borrowBookedID->head;
-
-                while (list->next != nullptr)
+                Node<int> *list = curr->getData()->getBorrowedBooks().head;
+                while (list->getNext() != nullptr)
                 {
-                    list = list->next;
+                    list = list->getNext();
                 }
                 Node<int> *temp = new Node<int>(id);
-                list->next = temp;
+                list->setNext(temp);
                 return true;
             }
-            curr = curr->next;
+            curr = curr->getNext();
         }
-
         return false;
     }
 };
 
-enum UserType
+enum class UserType
 {
     STUDENT,
     TEACHER
@@ -128,9 +142,9 @@ string userTypeToString(UserType type)
 {
     switch (type)
     {
-    case STUDENT:
+    case UserType::STUDENT:
         return "student";
-    case TEACHER:
+    case UserType::TEACHER:
         return "teacher";
     default:
         return "unknown";
@@ -144,55 +158,72 @@ protected:
     int id;
     string name;
     UserType type;
+    Linklist<int> borrowBookedID;
 
 public:
+    User()
+    {
+        this->id = 0;
+        this->name = "";
+        this->type = UserType::STUDENT;
+    }
     User(string name, UserType type)
     {
         this->id = ++nextUserID;
         this->name = name;
         this->type = type;
     }
-    virtual void displayUserDetails() {}
+
+    int getId() const
+    {
+        return id;
+    }
+    Linklist<int> &getBorrowedBooks()
+    {
+        return borrowBookedID;
+    }
+
+    virtual ~User() {}
+    virtual void displayUserDetails() const = 0;
 };
 
 int User::nextUserID = 0;
 
-class Student : private User
+class Student : public User
 {
 private:
     int yearOfStudies;
-    Linklist<int> borrowBookedID;
 
 public:
-    Student(string name, int yearOfStudies) : User(name, STUDENT)
+    Student(string name, int yearOfStudies) : User(name, UserType::STUDENT)
     {
         this->yearOfStudies = yearOfStudies;
     }
-    void displayUserDetails(void) override
+
+    void displayUserDetails() const override
     {
-        cout << "Student ID: " << this->id << endl;
-        cout << "Student Name: " << this->name << endl;
-        cout << "Student Year of Studies: " << this->yearOfStudies << endl;
+        cout << "Student ID: " << id << endl;
+        cout << "Student Name: " << name << endl;
+        cout << "Year of Studies: " << yearOfStudies << endl;
     }
 };
 
-class Teacher : private User
+class Teacher : public User
 {
 private:
     string department;
-    Linklist<int> borrowBookedID;
 
 public:
-    Teacher(string department, string name) : User(name, TEACHER)
+    Teacher(string name, string department) : User(name, UserType::TEACHER)
     {
         this->department = department;
     }
 
-    void displayUserDetails(void) override
+    void displayUserDetails() const override
     {
-        cout << "Teacher ID: " << this->id << endl;
-        cout << "Teacher Department: " << this->name << endl;
-        cout << "Teacher Name: " << this->name << endl;
+        cout << "Teacher ID: " << id << endl;
+        cout << "Teacher Name: " << name << endl;
+        cout << "Department: " << department << endl;
     }
 };
 
@@ -206,85 +237,174 @@ private:
     bool isAvaible;
 
 public:
+    Book()
+    {
+        this->id = 0;
+        this->title = "";
+        this->author = "";
+        this->isAvaible = "";
+    }
+
     Book(string title, string author, bool isAvaible)
     {
         this->id = ++nextBookID;
+        this->title = title;
         this->author = author;
         this->isAvaible = isAvaible;
-        this->title = title;
     }
 
-    void displayBookDetails(void) const
+    int getId() const
     {
-        cout << "Book ID: " << this->id << endl;
-        cout << "Book Title: " << this->title << endl;
-        cout << "Book author: " << this->author << endl;
-        cout << "IsAvaible? " << (this->isAvaible ? "Yes" : "No") << endl;
+        return id;
+    }
+    bool getAvailability() const
+    {
+        return isAvaible;
+    }
+    void setAvailability(bool availability)
+    {
+        isAvaible = availability;
+    }
+
+    void displayBookDetails() const
+    {
+        cout << "Book ID: " << id << endl;
+        cout << "Title: " << title << endl;
+        cout << "Author: " << author << endl;
+        cout << "Available: " << (isAvaible ? "Yes" : "No") << endl;
     }
 };
 
 int Book::nextBookID = 0;
-
-class Library
-{
-private:
-    Linklist<Book> books;
-    Linklist<User> users;
-    Linklist<int> transactionHistory;
-
-public:
-    void addBook(Book &book)
-    {
-        books.insertData(book);
-    };
-    void addUser(User &user)
-    {
-        users.insertData(user);
-    }
-    Book searchBook(int id)
-    {
-        return books.searchData(id);
-    };
-    User searchUser(int id)
-    {
-        return users.searchData(id);
-    };
-    bool borrowBook(int bookID, int userID)
-    {
-        bool res = books.borrowBook(bookID);
-        if (!res)
-        {
-            cerr << "Book already borrowed " << endl;
-            return false;
-        }
-        bool res2 = users.addBookInLinklist(userID);
-        if (!res2)
-        {
-            cerr << "User not found" << endl;
-            return false;
-        }
-
-        return true;
-    };
-    void returnBook(int bookID, int userID) {
-
-    };
-};
-
 int main()
 {
-    sqlite3 *db;
-    const char *dbPath = "D:/CPP/library-system/db/library-system.db";
-    int exit = sqlite3_open(dbPath, &db);
-    if (exit)
+    Linklist<Book> bookList;
+    Linklist<User *> userList;
+
+    bookList.insertData(Book("C++ Programming", "Bjarne Stroustrup", true));
+    bookList.insertData(Book("Data Structures and Algorithms", "Mark Allen Weiss", true));
+    bookList.insertData(Book("Artificial Intelligence", "Stuart Russell", true));
+
+    userList.insertData(new Student("Alice", 2));
+    userList.insertData(new Teacher("Dr. Bob", "Computer Science"));
+
+    int choice;
+
+    do
     {
-        cerr << "Error opening database: " << sqlite3_errmsg(db) << endl;
-        return -1;
-    }
-    else
+        cout << "\nLibrary Management System Menu:\n";
+        cout << "1. Add Book\n";
+        cout << "2. Borrow Book\n";
+        cout << "3. Return Book\n";
+        cout << "4. List All Books\n";
+        cout << "5. List All Users\n";
+        cout << "6. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+
+        switch (choice)
+        {
+        case 1:
+        {
+            string title, author;
+            cout << "Enter book title: ";
+            cin.ignore();
+            getline(cin, title);
+            cout << "Enter book author: ";
+            getline(cin, author);
+            bookList.insertData(Book(title, author, true));
+            cout << "Book added successfully!\n";
+            break;
+        }
+        case 2:
+        {
+            int userId, bookId;
+            cout << "Enter user ID: ";
+            cin >> userId;
+            cout << "Enter book ID: ";
+            cin >> bookId;
+
+            auto userOpt = userList.searchData(userId);
+            auto bookOpt = bookList.searchData(bookId);
+
+            if (userOpt && bookOpt && bookOpt->getAvailability())
+            {
+                User *user = *userOpt;
+                Book &book = *bookOpt;
+
+                book.setAvailability(false);
+                user->getBorrowedBooks().insertData(bookId);
+                cout << "Book borrowed successfully!\n";
+            }
+            else
+            {
+                cout << "Error: User or book not found, or book not available.\n";
+            }
+            break;
+        }
+        case 3:
+        {
+            int userId, bookId;
+            cout << "Enter user ID: ";
+            cin >> userId;
+            cout << "Enter book ID: ";
+            cin >> bookId;
+
+            auto userOpt = userList.searchData(userId);
+            auto bookOpt = bookList.searchData(bookId);
+
+            if (userOpt && bookOpt)
+            {
+                User *user = *userOpt;
+                Book &book = *bookOpt;
+
+                book.setAvailability(true);
+                cout << "Book returned successfully!\n";
+            }
+            else
+            {
+                cout << "Error: User or book not found.\n";
+            }
+            break;
+        }
+        case 4:
+        {
+            cout << "Listing all books:\n";
+            Node<Book> *curr = bookList.getHead();
+            while (curr)
+            {
+                curr->getData().displayBookDetails();
+                curr = curr->getNext();
+            }
+            break;
+        }
+        case 5:
+        {
+            cout << "Listing all users:\n";
+            Node<User *> *curr = userList.getHead();
+            while (curr)
+            {
+                curr->getData()->displayUserDetails();
+                curr = curr->getNext();
+            }
+            break;
+        }
+        case 6:
+            cout << "Exiting program. Cleaning up memory...\n";
+            break;
+        default:
+            cout << "Invalid choice. Please try again.\n";
+            break;
+        }
+    } while (choice != 6);
+
+    // Clean up dynamically allocated memory for users
+    Node<User *> *curr = userList.getHead();
+    while (curr)
     {
-        cout << "Opened database successfully!" << endl;
+        delete curr->getData();
+        curr = curr->getNext();
     }
-    sqlite3_close(db);
+
     return 0;
 }
